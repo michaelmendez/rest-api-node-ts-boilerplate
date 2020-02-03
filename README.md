@@ -1,9 +1,10 @@
-# RESTful API using Node.js, Express, Mongoose & TypeScript
+# RESTful API using Node.js, Express, TypeScript- and is ready for mongoose
+Backend for a private project nuxtScrap
 
-This was 
+This was for forked from Michael Méndez
+https://github.com/michaelmendez/rest-api-node-ts-boilerplate
 
 This is a boilerplate for building scalable and robust REST APIs using Node.js & TypeScript.
-
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
