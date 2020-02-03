@@ -1,5 +1,5 @@
 {
-  "name": "rest-api-node-ts-boilerplate",
+  "name": "scraper-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,18 +17,28 @@
   "dependencies": {
     "bcrypt": "^3.0.0",
     "body-parser": "^1.18.3",
+    "cheerio": "^1.0.0-rc.3",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
+    "elasticsearch": "^16.6.0",
     "express": "^4.16.3",
     "helmet": "^3.13.0",
+    "http-proxy-agent": "^4.0.0",
     "http-status": "^1.2.0",
     "jwt-then": "^1.0.1",
-    "mongoose": "^5.2.15"
+    "mongoose": "^5.2.15",
+    "puppeteer": "^2.1.0",
+    "puppeteer-cluster": "^0.18.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5",
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.16",
     "@types/dotenv": "^4.0.3",
     "@types/express": "^4.16.0",
     "@types/node": "^10.9.4",
+    "@types/puppeteer": "^2.0.0",
     "morgan": "^1.9.1",
     "nodemon": "^1.18.4",
     "ts-node": "^7.0.1",

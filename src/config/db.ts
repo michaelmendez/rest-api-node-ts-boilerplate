@@ -11,7 +11,7 @@ export default (async () => {
       { useNewUrlParser: true }
     );
     // listen for requests
-    console.log('The Conection is Ok');
+    console.log('The Connection is Ok');
   } catch (err) {
     console.log(`${err} Could not Connect to the Database. Exiting Now...`);
     process.exit();
