@@ -38,7 +38,7 @@ router.post('/all', async (req: Request, res: Response) => {
   } else {
     res.json({
       error: null,
-      message: 'url already indexed',
+      data: `${req.body.website} already indexed`,
     });
   }
 });

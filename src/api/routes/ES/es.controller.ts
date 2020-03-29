@@ -150,9 +150,7 @@ export default class EsController {
         return client.search(req.body).then((resp: any) => {
             if (resp) {
                 console.log('--- Response ---')
-                res.json({
-                    response: resp.hits.hits
-                })
+                res.json(resp.hits.hits)
             }
         })
     };
@@ -167,9 +165,7 @@ export default class EsController {
             console.log('--- Hits ---')
             search.clusterSearch(response.hits.hits, word)
             // launchChrome()
-            res.json({
-                response: response.hits.hits
-            })
+            res.json(response.hits.hits)
         }
         // })
     };
@@ -213,7 +209,8 @@ export default class EsController {
                     section: req.body.section,
                     title: req.body.title,
                     url: req.body.url,
-                    date: new Date()
+                    date: new Date(),
+                    rootNode: req.body.rootNode
                 }
             }
             return this.esDoesIndexExist(request.word)
@@ -238,7 +235,7 @@ export default class EsController {
                 })
                 .then(sectionAdded => {
                     if (sectionAdded) {
-                        return sectionAdded
+                        return res.send(sectionAdded)
                     } else {
                         return 'problem adding doc'
                         console.log('problem adding doc')
@@ -267,12 +264,12 @@ export default class EsController {
                     bool: {
                         must: [
                             {
-                                match: {
+                                match_phrase: {
                                     url: website2
                                 }
                             },
                             {
-                                match: {
+                                match_phrase: {
                                     rootNode: true
                                 }
                             }
@@ -370,7 +367,7 @@ export default class EsController {
                     type: 'date',
                     format: 'yyyy-MM-dd'
                 },
-                leaf: {
+                rootNode: {
                     type: 'boolean'
                 }
             }

@@ -166,7 +166,7 @@ export default {
                     type: 'date',
                     format: 'yyyy-MM-dd'
                 },
-                leaf: {
+                rootNode: {
                     type: 'boolean'
                 }
             }
@@ -334,7 +334,8 @@ export default {
                     section: req.body.section,
                     title: req.body.title,
                     url: req.body.url,
-                    date: new Date()
+                    date: new Date(),
+                    rootNode: req.body.rootNode
                 }
             }
             return this.esDoesIndexExist(request.word)
@@ -386,12 +387,12 @@ export default {
                     bool: {
                         must: [
                             {
-                                match: {
+                                match_phrase: {
                                     url: website2
                                 }
                             },
                             {
-                                match: {
+                                match_phrase: {
                                     rootNode: true
                                 }
                             }
