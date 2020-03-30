@@ -1,7 +1,8 @@
+import { Request, Response } from 'express';
+
+import { EsIndex } from '../../../../models/interfaces';
 import { client } from '../../elasticsearch'
 import search from './searchES'
-
-import { Request, Response } from 'express';
 
 export default class EsController {
 
@@ -25,11 +26,8 @@ export default class EsController {
                 format: 'json',
                 v: true
             })
-            .then((resp: any) => {
-                // console.log('-- Client Health --', resp)
-                res.json({
-                    response: resp
-                })
+            .then((resp: EsIndex[]) => {
+                res.json(resp)
             })
     };
 

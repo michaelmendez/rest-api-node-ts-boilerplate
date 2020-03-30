@@ -32,14 +32,8 @@ const esController = new EsController();
 
 const proxies = []
 
-
-
-
-// import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-// import * as jwt from 'jwt-then';
-// import config from '../../config/config';
-// import User from './user.model';
+import { AllScrapings, Scraping } from '../../../../models/interfaces';
 
 export default class ScrapeController {
   public scrape = async (req: Request, res: Response): Promise<any> => {
@@ -89,9 +83,6 @@ export default class ScrapeController {
         .catch((err) => {
           // handle error
           console.error('cheerio error url: ' + website + '\n' + 'error: ' + err)
-          io.emit('scrapeAllDone', {
-            data: 'Error from URL: ' + website
-          })
           return res.status(404).send({
             success: false,
             message: 'Users not found',
@@ -107,7 +98,7 @@ export default class ScrapeController {
     }
   };
 
-  public scrapeAll = async (req: Request, res: Response): Promise<any> => {
+  public scrapeAll = async (req: Request, res: Response): Promise<AllScrapings[]> => {
     const website = req.body.website
     // const proxyWPort = proxies[Math.floor(Math.random() * proxies.length)].split(
     //     ':'
@@ -119,13 +110,7 @@ export default class ScrapeController {
 
     //   const agent = new HttpProxyAgent(proxy)
     try {
-      // let hbody = await rp(opts)
-      // let hbody = await rp(website)
-
-      // (async () => {
-      // return new Promise(async () => {
       const browser = await puppeteer.launch()
-      // return rp(website)
       const page = await browser.newPage()
 
       return page
@@ -144,8 +129,7 @@ export default class ScrapeController {
               processATags(website, deDupedATags)
             }
             const rootNode = true
-            const tAndS = findSections(allTitles, body, website, rootNode)
-            // resolve(tAndS)
+            const tAndS: Scraping[] = findSections(allTitles, body, website, rootNode)
             return res.send({
               url: website,
               data: tAndS
@@ -221,29 +205,21 @@ function cheerioScrape(hbody) {
   }
 }
 
-function findSections(titles, htmlBody, website, rootNode?) {
+function findSections(titles, htmlBody, website, rootNode?): Scraping[] {
   // this is for the paragraph
   // (?s)((?:[^\n][\n]?)+)
 
   // var MBTIregex = /ISTJ|ISFJ|INFJ|INTJ|ISTP|ISFP|INFP|INTP|ESTP|ESFP|ENFP|ENTP|ESTJ|ESFJ|ENFJ|ENTJ|COMMENT+(?=\'?s)*/ig;
   const allSections = []
-  // (?:\s*)\n\s*
-  // (?:\s)\s
   if (!htmlBody) {
     console.log('no htmlbody')
   }
   // remove extra double spaces from html body
   htmlBody = htmlBody.replace(/\s\s+/g, ' ')
   const regexToRemove = new RegExp(/(?:\s*)\n\s*/, 'igm')
-  // htmlBody = htmlBody.replace(/(\r\n|\n|\r)/gm, " ")
-  // htmlBody = htmlBody.replace(regexToRemove, " ")
   let match
   let werd
   for (let i = 0; i < titles.length; i++) {
-    // let titleSection = new RegExp("(?=" + titles[i] + ".*\n\K)+(?s)(.+(?=\n" + titles[i + 1]+ "))", 'ig')
-    // let titleSection = new RegExp("(" + titles[i] + ".*)+(\n+.*)|(" + titles[i + 1]+ ")(?:\n)", 'ig')
-    // this matches an newline with any character one or more being matched then the word (?=(\n+.*" + titles[i + 1] + "))
-    // let titleSection = new RegExp("(" + titles[i] + ".*)|(\n+.*)+(?=(\n+.*(" + titles[i + 1] + ".*)))", 'iug')
     if (!titles[i]) {
       console.log('no title start')
     }
@@ -320,7 +296,7 @@ function findSections(titles, htmlBody, website, rootNode?) {
   return allSections
 }
 
-async function processATags(rootURL, aTags) {
+function processATags(rootURL, aTags): void {
   try {
     // var hostname = rootURL;
     const hostname = new URL(rootURL).hostname
@@ -328,8 +304,7 @@ async function processATags(rootURL, aTags) {
       /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi
     )
     let count = 0
-    // let finished = await Promise.all(aTags.forEach(async(e) => {
-    const finished = aTags.map(async e => {
+    aTags.forEach(async e => {
       const isUrl = websiteRegex.test(e.href)
       let url: string
       const indexOfRoot = e.href.indexOf(hostname)
@@ -346,8 +321,6 @@ async function processATags(rootURL, aTags) {
       else if (indexOfRoot === -1 && isUrl) {
         return
       }
-      // https://www.truity.com/personality-type/INFP
-      // return new Promise(function(resolve, reject) {
       if (url) {
         const respod: boolean = await esController.esIsURLIndexed(url)
         if (respod !== true) {
@@ -359,7 +332,7 @@ async function processATags(rootURL, aTags) {
               const { body, allTitles } = cheerioScrape(hbody)
               // dont use the deDupedATags or it will be recurrsive
               const rootNode = false;
-              const tAndS = findSections(allTitles, body, rootURL, rootNode)
+              const tAndS: Scraping[] = findSections(allTitles, body, rootURL, rootNode)
               io.emit('atag', {
                 data: tAndS,
                 url
@@ -372,20 +345,12 @@ async function processATags(rootURL, aTags) {
             })
         } else {
           console.log(url + ' already indexed')
-          io.emit('scrapeAllDone', {
-            data: `${url} already indexed`
-          })
         }
       } else {
         console.log('no url')
       }
     })
-    await Promise.all(finished)
-    // if(finished){
-    io.emit('scrapeAllDone', {
-      data: 'Finished Streaming Results'
-    })
-    // }
+    
   } catch (e) {
     console.log('problem with : ' + e)
   }
