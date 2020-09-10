@@ -1,12 +1,14 @@
+import socket from 'socket.io'
+
 import app from './App';
 import CONFIG from './config/config';
+
 import './config/db';
 
-import socket from 'socket.io'
 // const io = require('socket.io');
 // import io from 'socket.io'
 
-const PORT = CONFIG.PORT;
+const PORT = 3001;
 
 const server = app.listen(PORT, err => {
   if (err) {
@@ -19,8 +21,7 @@ const server = app.listen(PORT, err => {
 // const globalAny:any = global
 
 // globalAny.
-export const io = require('socket.io')(server)
-
+export const io = require('socket.io')(server, { origins: '*:*'})
 // export const socket = io.listen(server)
 // export io;
 

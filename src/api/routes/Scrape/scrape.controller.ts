@@ -9,8 +9,12 @@ const puppeteer = require('puppeteer')
 import { URL } from 'url'
 import { io } from '../../../index'
 // const rp = util.promisify(requestp)
-const MBTIregexTitles = /ISTJ|ISFJ|INFJ|INTJ|ISTP|ISFP|INFP|INTP|ESTP|ESFP|ENFP|ENTP|ESTJ|ESFJ|ENFJ|ENTJ|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim
-const typeTitles = /ISTJ|ISFJ|INFJ|INTJ|ISTP|ISFP|INFP|INTP|ESTP|ESFP|ENFP|ENTP|ESTJ|ESFJ|ENFJ|ENTJ|COMMENT+(?=\'?s|S)*/gim
+// const MBTIregexTitles = /ISTJ|ISFJ|INFJ|INTJ|ISTP|ISFP|INFP|INTP|ESTP|ESFP|ENFP|ENTP|ESTJ|ESFJ|ENFJ|ENTJ|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim
+// const typeTitles = /ISTJ|ISFJ|INFJ|INTJ|ISTP|ISFP|INFP|INTP|ESTP|ESFP|ENFP|ENTP|ESTJ|ESFJ|ENFJ|ENTJ|COMMENT+(?=\'?s|S)*/gim
+
+
+const MBTIregexTitles = /([E|I]+[N|S][T|F]+[P|J])|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim
+const typeTitles = /([E|I]+[N|S][T|F]+[P|J])|COMMENT+(?=\'?s|S)*/gim
 
 // const MBTIregexTitles2 = /[e|i][s|n][f|t][p|j] /, img
 // ai startup
@@ -26,127 +30,125 @@ import HttpProxyAgent = require('http-proxy-agent')
 // import sw = require('stopword')
 // import esClient = require('../ES/es.controller')
 
-import EsController from '../ES/es.controller'
+import * as esController from '../ES/es.controller'
 
-const esController = new EsController();
 
 const proxies = []
 
 import { Request, Response } from 'express';
 import { AllScrapings, Scraping } from '../../../../models/interfaces';
 
-export default class ScrapeController {
-  public scrape = async (req: Request, res: Response): Promise<any> => {
-    const website = req.body.website
-    const word = req.body.word
-    try {
-      const browser = await puppeteer.launch()
-      // return rp(website)
-      const page = await browser.newPage()
+export async function scrape(req: Request, res: Response): Promise<any> {
+  const website = req.body.website
+  const word = req.body.word
+  try {
+    const browser = await puppeteer.launch()
+    // return rp(website)
+    const page = await browser.newPage()
 
-      return page
-        .goto(website, {
-          waitLoad: true,
-          waitNetworkIdle: true // defaults to false
+    return page
+      .goto(website, {
+        waitLoad: true,
+        waitNetworkIdle: true // defaults to false
+      })
+      .then(async hbody => {
+        const $ = cheerio.load(hbody, {
+          normalizeWhitespace: true,
+          decodeEntities: true
         })
-        .then(async hbody => {
-          const $ = cheerio.load(hbody, {
-            normalizeWhitespace: true,
-            decodeEntities: true
+        const htmlbody = $('body')
+        const body = htmlbody.text()
+        // const scrapedObj = new ScrapedObj(word)
+
+        const scrapedObj = {
+          word,
+          body: {
+            date: new Date(), // Date.getDate(), //Date.now(),
+            url: website,
+            sentences: findMatches(body, word)
+          }
+        }
+        // sentencesWSynonyms  = await processSynonyms(scrapedObj.body.sentences)
+
+        // let stems = getStems(await Promise.all(lems))
+        // .then(newStems => {
+        //   resolve(newStems)
+        // })
+        // let wordsWSyn = wordLookup(newStems)
+
+        // resolve(scrapedObj)
+        return res.status(200).send({
+          success: true,
+          data: scrapedObj
+        });
+      })
+      .catch((err) => {
+        // handle error
+        console.error('cheerio error url: ' + website + '\n' + 'error: ' + err)
+        return res.status(404).send({
+          success: false,
+          message: 'Users not found',
+          data: err
+        });
+      })
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: err.toString(),
+      data: null
+    });
+  }
+};
+
+export async function scrapeAll(req: Request, res: Response): Promise<AllScrapings[]> {
+  const website = req.body.website
+  // const proxyWPort = proxies[Math.floor(Math.random() * proxies.length)].split(
+  //     ':'
+  //   )
+  //   const proxy = {
+  //     host: proxyWPort[0],
+  //     port: proxyWPort[1]
+  //   }
+
+  //   const agent = new HttpProxyAgent(proxy)
+  try {
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+
+    return page
+      .goto(website, {
+        waitLoad: true,
+        waitNetworkIdle: true // defaults to false
+      })
+      .then(async e => {
+        const hbody = await page.content()
+
+        // return redditScrape(hbody, website);
+
+        if (hbody) {
+          const { body, deDupedATags, allTitles } = cheerioScrape(hbody)
+          if (deDupedATags.length > 0) {
+            processATags(website, deDupedATags)
+          }
+          const rootNode = true
+          const tAndS: Scraping[] = findSections(allTitles, body, website, rootNode)
+          return res.send({
+            url: website,
+            data: tAndS
           })
-          const htmlbody = $('body')
-          const body = htmlbody.text()
-          // const scrapedObj = new ScrapedObj(word)
+        }
+      })
+  }
+  catch (err) {
+    console.trace('error 131 ' + err)
+    res.status(500).send({
+      success: false,
+      message: err.toString(),
+      data: null
+    });
+  }
+};
 
-          const scrapedObj = {
-            word,
-            body: {
-              date: new Date(), // Date.getDate(), //Date.now(),
-              url: website,
-              sentences: findMatches(body, word)
-            }
-          }
-          // sentencesWSynonyms  = await processSynonyms(scrapedObj.body.sentences)
-
-          // let stems = getStems(await Promise.all(lems))
-          // .then(newStems => {
-          //   resolve(newStems)
-          // })
-          // let wordsWSyn = wordLookup(newStems)
-
-          // resolve(scrapedObj)
-          return res.status(200).send({
-            success: true,
-            data: scrapedObj
-          });
-        })
-        .catch((err) => {
-          // handle error
-          console.error('cheerio error url: ' + website + '\n' + 'error: ' + err)
-          return res.status(404).send({
-            success: false,
-            message: 'Users not found',
-            data: err
-          });
-        })
-    } catch (err) {
-      res.status(500).send({
-        success: false,
-        message: err.toString(),
-        data: null
-      });
-    }
-  };
-
-  public scrapeAll = async (req: Request, res: Response): Promise<AllScrapings[]> => {
-    const website = req.body.website
-    // const proxyWPort = proxies[Math.floor(Math.random() * proxies.length)].split(
-    //     ':'
-    //   )
-    //   const proxy = {
-    //     host: proxyWPort[0],
-    //     port: proxyWPort[1]
-    //   }
-
-    //   const agent = new HttpProxyAgent(proxy)
-    try {
-      const browser = await puppeteer.launch()
-      const page = await browser.newPage()
-
-      return page
-        .goto(website, {
-          waitLoad: true,
-          waitNetworkIdle: true // defaults to false
-        })
-        .then(async e => {
-          const hbody = await page.content()
-
-          // return redditScrape(hbody, website);
-
-          if (hbody) {
-            const { body, deDupedATags, allTitles } = cheerioScrape(hbody)
-            if (deDupedATags.length > 0) {
-              processATags(website, deDupedATags)
-            }
-            const rootNode = true
-            const tAndS: Scraping[] = findSections(allTitles, body, website, rootNode)
-            return res.send({
-              url: website,
-              data: tAndS
-            })
-          }
-        })
-    }
-    catch (err) {
-      console.trace('error 131 ' + err)
-      res.status(500).send({
-        success: false,
-        message: err.toString(),
-        data: null
-      });
-    }
-  };
-}
 
 function findMatches(htmlBody, word) {
   // the last word next to the punctuation is getting stripped
@@ -350,7 +352,7 @@ function processATags(rootURL, aTags): void {
         console.log('no url')
       }
     })
-    
+
   } catch (e) {
     console.log('problem with : ' + e)
   }
@@ -385,7 +387,7 @@ function processATags(rootURL, aTags): void {
 //     // })
 //   }
 
-//   const getLems = async filteredSent => {
+//   const getLems filteredSent => {
 //     return await Promise.all(
 //       filteredSent.map(async sentence => {
 //         const sent = await Promise.all(
