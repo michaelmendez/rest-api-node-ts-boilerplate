@@ -1,10 +1,11 @@
-import * as bodyParser from 'body-parser';
-import * as cors from 'cors';
-import * as express from 'express';
-import * as helmet from 'helmet';
-import * as morgan from 'morgan';
-import api from './api/index';
-import * as errorHandler from './helpers/errorHandler';
+import * as bodyParser from "body-parser";
+import * as cors from "cors";
+import * as express from "express";
+import * as helmet from "helmet";
+import * as morgan from "morgan";
+
+import api from "./api/index";
+import * as errorHandler from "./helpers/errorHandler";
 
 class App {
   public express: express.Application;
@@ -18,14 +19,14 @@ class App {
 
   private setMiddlewares(): void {
     this.express.use(cors());
-    this.express.use(morgan('dev'));
+    this.express.use(morgan("dev"));
     this.express.use(bodyParser.json());
     this.express.use(bodyParser.urlencoded({ extended: false }));
     this.express.use(helmet());
   }
 
   private setRoutes(): void {
-    this.express.use('/api', api);
+    this.express.use("/api", api);
   }
 
   private catchErrors(): void {
