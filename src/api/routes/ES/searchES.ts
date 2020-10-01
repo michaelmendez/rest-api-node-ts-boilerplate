@@ -7,10 +7,10 @@
 // import { Cluster } from ('pupCluster')
 // const cluster = require('./pupCluster')
 // const { Cluster } = require('puppeteer-cluster')
-import { Cluster } from 'puppeteer-cluster'
+import { Cluster } from "puppeteer-cluster";
 
 // import socket from '../../'
-import { io } from '../../../index'
+import { io } from "../../../index";
 
 // import Cluster from 'puppeteer-cluster'
 
@@ -42,128 +42,120 @@ export default {
     // }
     try {
       // filter for unique urls
-      ESresponse = this.uniq(ESresponse)
-      const puppeteer = require('puppeteer')
-      const browser = await puppeteer.launch()
+      ESresponse = this.uniq(ESresponse);
+      const puppeteer = require("puppeteer");
+      const browser = await puppeteer.launch();
 
-      const page = await browser.newPage()
+      const page = await browser.newPage();
       const finished = ESresponse.map(async (es: any) => {
         // ESresponse.forEach(async (result) => {
         await page.goto(es._source.url, {
           waitLoad: true,
-          waitNetworkIdle: true // defaults to false
-        }) // , { waitUntil: 'load' }
+          waitNetworkIdle: true, // defaults to false
+        }); // , { waitUntil: 'load' }
         // let werd = ESresponse[i]
         await page.evaluate((werd: string) => {
-          window.find(werd) // ._index
-        }, werd)
+          window.find(werd); // ._index
+        }, werd);
         // let screennshot = await puppetExecute(ESresponse[i]._source.url, werd)
         // cluster.queue({ url: ESresponse[i]._source.url, word: werd })
-        const screenshot = await page.screenshot() // { path: './screenshots/'+ werd + i +'.jpg', type: 'jpeg' }
+        const screenshot = await page.screenshot(); // { path: './screenshots/'+ werd + i +'.jpg', type: 'jpeg' }
         const packet = {
           url: es._source.url,
           word: werd,
-          screenshot
-        }
-        console.log('emitting screenshot')
-        io.emit('screenshot', packet)
-      })
-      await Promise.all(finished)
+          screenshot,
+        };
+        console.log("emitting screenshot");
+        io.emit("screenshot", packet);
+      });
+      await Promise.all(finished);
       // if(finished){
-      io.emit('searchingDone', {
-        data: 'Finished Searching Results'
-      })
+      io.emit("searchingDone", {
+        data: "Finished Searching Results",
+      });
 
       // await browser.close()
-      console.log('server done')
+      console.log("server done");
       return {
-        response: 'recieved Elastic Search response'
-      }
+        response: "recieved Elastic Search response",
+      };
     } catch (err) {
       // handle error
-      console.log('cherrio error' + err)
+      console.log("cherrio error" + err);
     }
   },
   uniq(a: any) {
-    const seen = {}
+    const seen = {};
     return a.filter((item: any) => {
       return seen.hasOwnProperty(item._source.url)
         ? false
-        : (seen[item._source.url] = true)
-    })
+        : (seen[item._source.url] = true);
+    });
   },
 
   async clusterSearch(ESresponse: any, werd: any): Promise<any> {
     // export function clusterSearch(ESresponse:any, werd:any) {
     // https://github.com/thomasdondorf/puppeteer-cluster#clusterqueuedata--taskfunction
-    ESresponse = this.uniq(ESresponse)
-    let wordInSentence = ''
+    ESresponse = this.uniq(ESresponse);
+    let wordInSentence = "";
     try {
       const fun = (async () => {
         const cluster = await Cluster.launch({
           concurrency: Cluster.CONCURRENCY_CONTEXT,
-          maxConcurrency: 10
-        })
+          maxConcurrency: 10,
+        });
 
         const getSentence = async ({ page, data }) => {
-          const { url, wordInSentence } = data
+          const { url, wordInSentence } = data;
           // url = url.replace(/\//g,"\\")
-          console.log('going to url: ' + url)
+          console.log("going to url: " + url);
           try {
             await page.goto(url, {
               waitLoad: true,
-              waitNetworkIdle: true // defaults to false
-            })
-            console.log('going to url: ' + url)
+              waitNetworkIdle: true, // defaults to false
+            });
+            console.log("going to url: " + url);
             await page.evaluate((wordInSentence: any) => {
-              window.scrollBy(0, Math.floor(Math.random() * 500))
-              window.find(wordInSentence) // ._index
-            }, wordInSentence)
-            const screenshot = await page.screenshot()
+              window.scrollBy(0, Math.floor(Math.random() * 500));
+              window.find(wordInSentence); // ._index
+            }, wordInSentence);
+            const screenshot = await page.screenshot();
             const packet = {
               url,
               word: wordInSentence,
-              screenshot
-            }
-            console.log('streaming results: ' + url)
-            io.emit('screenshot', packet)
+              screenshot,
+            };
+            console.log("streaming results: " + url);
+            io.emit("screenshot", packet);
           } catch (e) {
-            console.log('cluster page error: ' + e)
+            console.log("cluster page error: " + e);
           }
-        }
+        };
 
-        cluster.task(getSentence)
+        cluster.task(getSentence);
 
         // let rx3 = new RegExp('[^.!?/\n/]*' + werd + "[^.!?'/\n/']*[.!?/\n/]", 'igm')
-        const rx3 = new RegExp('([^./\n/\r]*' + werd + '[^./\r/\n]*.)', 'ig')
-        const finished: any[] = []
+        const rx3 = new RegExp("([^./\n/\r]*" + werd + "[^./\r/\n]*.)", "ig");
+        const finished: any[] = [];
         ESresponse.forEach(async (es: any) => {
-          const page = es._source.url
-          const url = es._source.url
+          const page = es._source.url;
+          const url = es._source.url;
           if (es._source.sentences) {
-            if (typeof es._source.sentences === 'string') {
-              const match = es._source.sentences.match(rx3)
-              if (match) {
-                wordInSentence = match[0].trim()
-              } else {
-                wordInSentence = es._source.sentences
-              }
+            if (typeof es._source.sentences === "string") {
+              const match = es._source.sentences.match(rx3);
+              wordInSentence = match ? match[0].trim() : es._source.sentences;
             } else {
-              wordInSentence = es._source.sentences[0]
+              wordInSentence = es._source.sentences[0];
             }
           } else if (es._source.section) {
-            if (typeof es._source.section === 'string') {
-              const match = es._source.section.match(rx3)
-              if (match) {
-                wordInSentence = match[0].trim()
-              } else {
-                wordInSentence = es._source.section
-              }
+            if (typeof es._source.section === "string") {
+              const match = es._source.section.match(rx3);
+              wordInSentence = match ? match[0].trim() : es._source.section;
             } else {
-              wordInSentence = es._source.section[0]
+              wordInSentence = es._source.section[0];
             }
           } else {
-            wordInSentence = werd
+            wordInSentence = werd;
           }
           // let rx3 = new RegExp('[^.!?/\n/]*' + word + "[^.!?'/\n/']*[.!?/\n/]", 'igm')
           // let rawSentences3 = htmlBody.match(rx3)
@@ -171,11 +163,11 @@ export default {
             await cluster.queue(
               {
                 url,
-                wordInSentence
+                wordInSentence,
               },
               getSentence
             )
-          )
+          );
           //   cluster.queue(async ({ page, data: url }) => {
           //     await page.goto(url)
           //     await page.evaluate(wordInSentence => {
@@ -190,25 +182,24 @@ export default {
           //     io.emit('screenshot', packet)
           //   });
           // }
-        })
-        await Promise.all(finished)
+        });
+        await Promise.all(finished);
         // if(finished){
-        io.emit('searchingDone', {
-          data: 'Finished Searching Results'
-        })
+        io.emit("searchingDone", {
+          data: "Finished Searching Results",
+        });
 
-        await cluster.idle()
-        await cluster.close()
-      })()
-      return 'Streaming Results for ' + werd
+        await cluster.idle();
+        await cluster.close();
+      })();
+      return "Streaming Results for " + werd;
     } catch (err) {
       // handle error
-      console.log('cherrio error' + err)
-      return 'problem with streaming Results'
+      console.log("cherrio error" + err);
+      return "problem with streaming Results";
     }
-  }
-}
-
+  },
+};
 
 // const promises = []
 //     for (let j = 0; j < parallel; j++) {
