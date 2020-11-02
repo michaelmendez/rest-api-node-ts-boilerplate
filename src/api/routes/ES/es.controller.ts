@@ -2,11 +2,12 @@ import { Request, Response } from "express";
 
 import { EsIndex } from "../../../../models/interfaces";
 import { client } from "../../elasticsearch";
+import { mustContain } from "../../ESRequests";
 import { ISingleDoc, IStoreAllReq } from "../../models/singleDoc";
 import { processDoc } from "../python/python";
-import search from "./searchES";
+import { clusterSearch } from "./searchES";
 
-export async function esHealth(req: Request, res: Response): Promise<any> {
+export const esHealth = async (req: Request, res: Response): Promise<any> => {
   return client.cluster.health({}).then((resp: any) => {
     if (resp) {
       return res.json({
@@ -20,7 +21,7 @@ export async function esHealth(req: Request, res: Response): Promise<any> {
   });
 }
 
-export async function esCatIndicies(req: Request, res: Response): Promise<any> {
+export const esCatIndicies = async (req: Request, res: Response): Promise<any> => {
   client.cat
     .indices({
       format: "json",
@@ -31,7 +32,7 @@ export async function esCatIndicies(req: Request, res: Response): Promise<any> {
     });
 }
 
-export async function esDeleteIndex(req: Request, res: Response): Promise<any> {
+export const esDeleteIndex = async (req: Request, res: Response): Promise<any> => {
   client.indices
     .delete({
       index: req.params.word,
@@ -51,7 +52,7 @@ export async function esDeleteIndex(req: Request, res: Response): Promise<any> {
     });
 }
 
-export async function esAddDoc(req: Request, res: Response): Promise<any> {
+export const esAddDoc = async (req: Request, res: Response): Promise<any> => {
   const respo = await esDoesIndexExist(req.body.word);
   if (!respo) {
     const mappingSuccess = await initMapping(req.body.word);
@@ -78,14 +79,14 @@ export async function esAddDoc(req: Request, res: Response): Promise<any> {
   }
 }
 
-export async function esSearch(req: Request, res: Response): Promise<any> {
-  return client.search(req.body).then(async (response: any) => {
+export const esSearch = async (req: Request, res: Response): Promise<any> => {
+  return client.search(mustContain(req.body.index, req.body.text)).then(async (response: any) => {
     if (response) {
       console.log("--- Response ---");
       // console.log(response)
-      const word = req.body.body.query.bool.must.query_string.query;
+      const word = req.body.text;
       console.log("--- Hits ---");
-      const message = await search.clusterSearch(response.hits.hits, word);
+      const message = await clusterSearch(response.hits.hits, word);
       res.json({
         response: message,
       });
@@ -93,8 +94,8 @@ export async function esSearch(req: Request, res: Response): Promise<any> {
   });
 }
 
-export async function esSearchIndex(req: Request, res: Response): Promise<any> {
-  return client.search(req.body).then((resp: any) => {
+export const esSearchIndex = async (req: Request, res: Response): Promise<any> => {
+  return client.search(mustContain(req.body.index, req.body.text)).then((resp: any) => {
     if (resp) {
       console.log("--- Response ---");
       res.json(resp.hits.hits);
@@ -102,25 +103,25 @@ export async function esSearchIndex(req: Request, res: Response): Promise<any> {
   });
 }
 
-export async function esStreamImages(
+export const esStreamImages = async (
   req: Request,
   res: Response
-): Promise<any> {
-  const response: any = await client.search(req.body);
+) => {
+  const response: any = await client.search(mustContain(req.body.index, req.body.text));
   // .then((response: any) => {
   if (response) {
     console.log("--- Response ---");
     // console.log(response)
-    const word = req.body.body.query.bool.must.query_string.query;
+    const word = req.body.text;
     console.log("--- Hits ---");
-    search.clusterSearch(response.hits.hits, word);
+    clusterSearch(response.hits.hits, word);
     // launchChrome()
     res.json(response.hits.hits);
   }
   // })
 }
 
-export async function esPaginatedSearch(req: Request, res: Response) {
+export const esPaginatedSearch = (req: Request, res: Response): Promise<any> => {
   console.log(req.query.index);
   return client
     .search({
@@ -142,10 +143,10 @@ export async function esPaginatedSearch(req: Request, res: Response) {
 
 /// ///////////////////////////// helper functions /////////////////////
 
-export async function esAddSentences(
+export const esAddSentences = async (
   req: Request,
   res: Response
-): Promise<any> {
+): Promise<any> => {
   try {
     const docAddedResponse = await client.index({
       index: req.body.word,
@@ -173,7 +174,7 @@ export async function esAddSentences(
   }
 }
 
-export async function esStoreAll(req: Request, res: Response): Promise<any> {
+export const esStoreAll = async (req: Request, res: Response): Promise<any> => {
   try {
     const respo = await esDoesIndexExist(req.body.index);
     if (!respo) {
@@ -211,7 +212,7 @@ export async function esStoreAll(req: Request, res: Response): Promise<any> {
   }
 }
 
-export async function esIsURLIndexed(website: string): Promise<boolean> {
+export const esIsURLIndexed = (website: string): Promise<boolean> => {
   // const website = req.body.website
   const website2 = website.replace(/\\/g, "\\\\");
 
@@ -252,7 +253,7 @@ export async function esIsURLIndexed(website: string): Promise<boolean> {
     });
 }
 
-export async function esDoesIndexExist(word: string): Promise<any> {
+export const esDoesIndexExist = async (word: string) => {
   try {
     const doesIt = await client.indices.exists({
       index: word,
@@ -268,7 +269,7 @@ export async function esDoesIndexExist(word: string): Promise<any> {
   }
 }
 
-export async function initMapping(indexName: string) {
+export const initMapping = (indexName: string) => {
   const payload = {
     settings: {
       analysis: {

@@ -5,7 +5,7 @@ const rp = require("request-promise");
 import { client } from "../../elasticsearch";
 import * as esController from "../ES/es.controller";
 
-export function processDoc(request: ISingleDoc, origReq?: IStoreAllReq) {
+export const processDoc = (request: ISingleDoc, origReq?: IStoreAllReq) => {
   console.log("processDoc");
   console.log(origReq);
   const options = {
@@ -41,7 +41,7 @@ export function processDoc(request: ISingleDoc, origReq?: IStoreAllReq) {
     });
 }
 
-export function addAnalyzedSection(parsedBody: IAnalyzedSection) {
+export const addAnalyzedSection = (parsedBody: IAnalyzedSection) => {
   return client.index({
     index: `analyzed-${parsedBody.index}`,
     type: "_doc",
