@@ -1,4 +1,5 @@
-export interface IUser {
+
+export interface ISQLUser {
     Id?: string;
 	FirstName?: string;
 	LastName?: string;
@@ -8,5 +9,6 @@ export interface IUser {
 	MBTIId?: number;
 	DateCreated?: string;
 	DateModified?: string;
+	tokenVersion?: 0;
 
 }

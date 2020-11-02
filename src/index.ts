@@ -7,11 +7,7 @@ import "./config/db";
 
 const PORT = 3001;
 
-const server = app.listen(PORT, (err) => {
-  if (err) {
-    return console.log(err);
-  }
-
+const server = app.listen(PORT, () => {
   console.log(`Server is listening on ${PORT}`);
 });
 
@@ -33,16 +29,16 @@ export const sqlConfig = {
 
 
 // connect to your database
-export const pool = sql.connect(sqlConfig, (err) => {
+export const pool = sql.connect(sqlConfig, (err: any) => {
   if (err) {
     console.log(err);
   } else {
-    console.log("success");
+    console.log("sql connected success");
     // create Request object
   }
 });
 
-sql.on("error", (err) => {
+sql.on("error", (err:any) => {
   // ... error handler
   console.log("Sql database connection error ", err);
 });
