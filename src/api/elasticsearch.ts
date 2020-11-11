@@ -1,3 +1,4 @@
+// tslint:disable-next-line: no-var-requires
 const elasticsearch = require('elasticsearch')
 // import elasticsearch from 'elasticsearch'
 
@@ -19,5 +20,3 @@ export const client = new elasticsearch.Client({
   ],
   log: 'trace'
 })
-
-// module.exports = client

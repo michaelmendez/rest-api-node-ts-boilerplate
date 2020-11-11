@@ -116,12 +116,11 @@ export const clusterSearch = async (
             waitLoad: true,
             waitNetworkIdle: true, // defaults to false
           });
-          console.log("going to url: " + url);
-          if(wordInSentence){
+          if (wordInSentence) {
             await page.evaluate((wordInSentence1) => {
               window.scrollBy(0, Math.floor(Math.random() * 500));
               const found = window.find(wordInSentence1); // ._index
-              if(!found){
+              if (!found) {
                 window.scrollBy(0, Math.floor(Math.random() * 500));
                 window.find(wordInSentence1);
               }
@@ -148,16 +147,15 @@ export const clusterSearch = async (
       ESresponse.forEach(async (es: any) => {
         const page = es._source.url;
         const url = es._source.url;
-        let wordInSentence = '';
+        let wordInSentence = "";
         if (es._source.sentences) {
-          es._source.sentences.every(sentence => {
-            if(sentence.sentence.match(rx3)){
-              wordInSentence = sentence.sentence
-              return false
+          es._source.sentences.every((sentence) => {
+            if (sentence.sentence.match(rx3)) {
+              wordInSentence = sentence.sentence;
+              return false;
             } else {
-              return true
+              return true;
             }
-            
           });
         } else if (es._source.section && es._source.section.trim()) {
           if (typeof es._source.section === "string") {

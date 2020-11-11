@@ -82,8 +82,6 @@ export const esAddDoc = async (req: Request, res: Response): Promise<any> => {
 export const esSearch = async (req: Request, res: Response): Promise<any> => {
   return client.search(mustContain(req.body.index, req.body.text)).then(async (response: any) => {
     if (response) {
-      console.log("--- Response ---");
-      // console.log(response)
       const word = req.body.text;
       console.log("--- Hits ---");
       const message = await clusterSearch(response.hits.hits, word);
@@ -97,7 +95,6 @@ export const esSearch = async (req: Request, res: Response): Promise<any> => {
 export const esSearchIndex = async (req: Request, res: Response): Promise<any> => {
   return client.search(mustContain(req.body.index, req.body.text)).then((resp: any) => {
     if (resp) {
-      console.log("--- Response ---");
       res.json(resp.hits.hits);
     }
   });
@@ -108,10 +105,7 @@ export const esStreamImages = async (
   res: Response
 ) => {
   const response: any = await client.search(mustContain(req.body.index, req.body.text));
-  // .then((response: any) => {
   if (response) {
-    console.log("--- Response ---");
-    // console.log(response)
     const word = req.body.text;
     console.log("--- Hits ---");
     clusterSearch(response.hits.hits, word);
@@ -130,8 +124,6 @@ export const esPaginatedSearch = (req: Request, res: Response): Promise<any> => 
       index: req.query.index,
     })
     .then((resp) => {
-      console.log("Successful query!");
-      // console.log(JSON.stringify(resp));
       res.json({
         response: resp.hits.hits,
       });
@@ -154,13 +146,11 @@ export const esAddSentences = async (
       body: req.body.body,
     });
     if (docAddedResponse.result === "created") {
-      console.log("doc inserted ");
       return {
         result: docAddedResponse,
         message: "Doc added",
       };
     } else {
-      console.log("eeeeerrr");
       return {
         error: docAddedResponse,
       };
@@ -192,12 +182,10 @@ export const esStoreAll = async (req: Request, res: Response): Promise<any> => {
     };
     return addSection(request, req.body)
       .then((sectionAdded) => {
-        console.log("finished");
         if (sectionAdded) {
           return res.send(sectionAdded);
         } else {
           return res.send("problem adding doc");
-          console.log("problem adding doc");
         }
       })
       .catch((e) => {
@@ -341,7 +329,6 @@ async function addSection(
       body: request.body,
     });
     if (docAddedResponse.result === "created") {
-      console.log("doc inserted ");
       processDoc(request, origReq);
       return {
         result: docAddedResponse,

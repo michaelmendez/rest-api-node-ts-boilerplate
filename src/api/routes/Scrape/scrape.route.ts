@@ -3,19 +3,17 @@ import { Request, Response, Router } from "express";
 
 import * as esController from "../ES/es.controller";
 import { processDoc } from "../python/python";
-import { isAuth } from "../Sql/sql.controller";
 import * as scrapeController from "./scrape.controller";
 
 const router: Router = Router();
 
-router.post("/Site", isAuth, scrapeController.scrape);
+router.post("/Site", scrapeController.scrape);
 
-router.post("/all", isAuth, scrapeController.scrapeAll);
+router.post("/all", scrapeController.scrapeAll);
 
-router.post("/storeAll", isAuth, esController.esStoreAll);
+router.post("/storeAll", esController.esStoreAll);
 
-
-router.post("/Store", isAuth, async (req: Request, res: Response) => {
+router.post("/Store", async (req: Request, res: Response) => {
   console.log("got to store request");
   try {
     // console.log('cat index: ' + req.body.word + '?')
@@ -48,6 +46,6 @@ router.post("/Store", isAuth, async (req: Request, res: Response) => {
   }
 });
 
-router.post("/StoreMultiplePages", isAuth, esController.esStoreAll);
+router.post("/StoreMultiplePages", esController.esStoreAll);
 
 export default router;

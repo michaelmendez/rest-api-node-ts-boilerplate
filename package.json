@@ -29,7 +29,6 @@
     "jsonwebtoken": "^8.5.1",
     "jwt-then": "^1.0.1",
     "mongoose": "^5.2.15",
-    "mssql": "^6.2.3",
     "nodemailer": "^6.4.12",
     "puppeteer": "^2.1.0",
     "puppeteer-cluster": "^0.18.0",

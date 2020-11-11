@@ -7,7 +7,6 @@ import * as esController from "../ES/es.controller";
 
 export const processDoc = (request: ISingleDoc, origReq?: IStoreAllReq) => {
   console.log("processDoc");
-  console.log(origReq);
   const options = {
     method: "POST",
     // uri: "http://192.168.1.166:5000/getTripples/doc",
@@ -21,7 +20,6 @@ export const processDoc = (request: ISingleDoc, origReq?: IStoreAllReq) => {
     .then((parsedBody: IAnalyzedSection) => {
       // POST succeeded...
       console.log("success");
-      console.log(parsedBody);
       //   esController
       //     .createESIndex(`analyzed-${request.word}`)
       //     .then(() => {
