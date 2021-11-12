@@ -18,26 +18,14 @@ export const processDoc = (request: ISingleDoc, origReq?: IStoreAllReq) => {
 
   return rp(options)
     .then((parsedBody: IAnalyzedSection) => {
-      // POST succeeded...
-      console.log("success");
-      //   esController
-      //     .createESIndex(`analyzed-${request.word}`)
-      //     .then(() => {
       return addAnalyzedSection(parsedBody);
-      //   console.log("success");
-      // })
-      // .catch((e: any) => {
-      //   console.log("gotta problem creating index 661");
-      //   return e;
-      //   // 'gotta problem creating index 661'
-      // });
     })
     .catch((err) => {
       // POST failed...
       console.error("fail");
       console.log(err);
     });
-}
+};
 
 export const addAnalyzedSection = (parsedBody: IAnalyzedSection) => {
   return client.index({
@@ -45,4 +33,4 @@ export const addAnalyzedSection = (parsedBody: IAnalyzedSection) => {
     type: "_doc",
     body: parsedBody,
   });
-}
+};

@@ -9,6 +9,9 @@ router.get("/health", controller.esHealth);
 router.get("/catIndicies", controller.esCatIndicies);
 router.delete("/deleteIndex/:word", controller.esDeleteIndex);
 router.post("/addDoc", controller.esAddDoc);
+
+router.post("/addAutocomplete", controller.esAddAutocomplete);
+// router.get("/autocomplete", controller.esAutocomplete);
 router.post("/search", controller.esSearch);
 router.post("/searchIndex", controller.esSearchIndex);
 router.post("/streamImages", controller.esStreamImages);

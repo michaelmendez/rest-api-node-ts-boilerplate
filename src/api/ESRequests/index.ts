@@ -1,5 +1,4 @@
 export const mustContain = (index: string, text: string) => {
-  console.log(index + text);
   if (text) {
     return {
       index,

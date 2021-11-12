@@ -19,9 +19,12 @@ export const esHealth = async (req: Request, res: Response): Promise<any> => {
       });
     }
   });
-}
+};
 
-export const esCatIndicies = async (req: Request, res: Response): Promise<any> => {
+export const esCatIndicies = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   client.cat
     .indices({
       format: "json",
@@ -30,9 +33,12 @@ export const esCatIndicies = async (req: Request, res: Response): Promise<any> =
     .then((resp: EsIndex[]) => {
       res.json(resp);
     });
-}
+};
 
-export const esDeleteIndex = async (req: Request, res: Response): Promise<any> => {
+export const esDeleteIndex = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   client.indices
     .delete({
       index: req.params.word,
@@ -50,7 +56,7 @@ export const esDeleteIndex = async (req: Request, res: Response): Promise<any> =
         });
       }
     });
-}
+};
 
 export const esAddDoc = async (req: Request, res: Response): Promise<any> => {
   const respo = await esDoesIndexExist(req.body.word);
@@ -77,34 +83,121 @@ export const esAddDoc = async (req: Request, res: Response): Promise<any> => {
         });
     }
   }
-}
+};
 
-export const esSearch = async (req: Request, res: Response): Promise<any> => {
-  return client.search(mustContain(req.body.index, req.body.text)).then(async (response: any) => {
-    if (response) {
-      const word = req.body.text;
-      console.log("--- Hits ---");
-      const message = await clusterSearch(response.hits.hits, word);
-      res.json({
-        response: message,
-      });
-    }
-  });
-}
-
-export const esSearchIndex = async (req: Request, res: Response): Promise<any> => {
-  return client.search(mustContain(req.body.index, req.body.text)).then((resp: any) => {
-    if (resp) {
-      res.json(resp.hits.hits);
-    }
-  });
-}
-
-export const esStreamImages = async (
+export const esAddAutocomplete = async (
   req: Request,
   res: Response
-) => {
-  const response: any = await client.search(mustContain(req.body.index, req.body.text));
+): Promise<any> => {
+  try {
+    const respo = await esDoesIndexExist(req.body.word);
+    if (!respo) {
+      const payload = {
+        settings: {
+          analysis: {
+            analyzer: {
+              std_english: {
+                type: "standard",
+                stopwords: "_english_",
+              },
+            },
+          },
+        },
+        mappings: {
+          properties: {
+            body: {
+              type: "text",
+              analyzer: "std_english",
+              fields: {
+                keyword: {
+                  type: "keyword",
+                  ignore_above: 256,
+                },
+              },
+            },
+            date: {
+              type: "date",
+            },
+            url: {
+              type: "keyword",
+              fields: {
+                keyword: {
+                  type: "keyword",
+                  ignore_above: 256,
+                },
+              },
+            },
+          },
+        },
+      };
+
+      await client.indicies.create({
+        index: `autocomplete-${req.body.word}`,
+        body: payload,
+      });
+    }
+
+    const docAddedResponse = await client.index({
+      index: `autocomplete-${req.body.word}`,
+      type: "_doc",
+      body: {
+        body: req.body.sentence,
+
+        date: new Date(),
+        url: req.body.url,
+      },
+    });
+    if (docAddedResponse.result === "created") {
+      res.json({
+        result: docAddedResponse,
+        message: "Doc added",
+      });
+    } else {
+      res.json({
+        error: docAddedResponse,
+      });
+    }
+  } catch (e) {
+    console.log("failed to insert Sentences doc " + e);
+    res.json({
+      error: e,
+      result: "failed to inset doc",
+    });
+  }
+};
+
+export const esSearch = async (req: Request, res: Response): Promise<any> => {
+  return client
+    .search(mustContain(req.body.index, req.body.text))
+    .then(async (response: any) => {
+      if (response) {
+        const word = req.body.text;
+        console.log("--- Hits ---");
+        const message = await clusterSearch(response.hits.hits, word);
+        res.json({
+          response: message,
+        });
+      }
+    });
+};
+
+export const esSearchIndex = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  return client
+    .search(mustContain(req.body.index, req.body.text))
+    .then((resp: any) => {
+      if (resp) {
+        res.json(resp.hits.hits);
+      }
+    });
+};
+
+export const esStreamImages = async (req: Request, res: Response) => {
+  const response: any = await client.search(
+    mustContain(req.body.index, req.body.text)
+  );
   if (response) {
     const word = req.body.text;
     console.log("--- Hits ---");
@@ -112,10 +205,12 @@ export const esStreamImages = async (
     // launchChrome()
     res.json(response.hits.hits);
   }
-  // })
-}
+};
 
-export const esPaginatedSearch = (req: Request, res: Response): Promise<any> => {
+export const esPaginatedSearch = (
+  req: Request,
+  res: Response
+): Promise<any> => {
   console.log(req.query.index);
   return client
     .search({
@@ -131,7 +226,7 @@ export const esPaginatedSearch = (req: Request, res: Response): Promise<any> => 
     .catch((err) => {
       console.trace(err.message);
     });
-}
+};
 
 /// ///////////////////////////// helper functions /////////////////////
 
@@ -162,7 +257,7 @@ export const esAddSentences = async (
       result: "failed to inset doc",
     };
   }
-}
+};
 
 export const esStoreAll = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -198,9 +293,9 @@ export const esStoreAll = async (req: Request, res: Response): Promise<any> => {
     return e;
     console.log("failed to create gotta problem creating doc");
   }
-}
+};
 
-export const esIsURLIndexed = (website: string): Promise<boolean> => {
+export const esIsRootURLIndexed = (website: string): Promise<boolean> => {
   // const website = req.body.website
   const website2 = website.replace(/\\/g, "\\\\");
 
@@ -211,8 +306,8 @@ export const esIsURLIndexed = (website: string): Promise<boolean> => {
         bool: {
           must: [
             {
-              match_phrase: {
-                url: website2,
+              wildcard: {
+                url: "*" + website2,
               },
             },
             {
@@ -239,7 +334,47 @@ export const esIsURLIndexed = (website: string): Promise<boolean> => {
     .catch((e: any) => {
       console.log("error seeing if url exists " + e);
     });
-}
+};
+
+export const esIsAtagURLIndexed = (website: string): Promise<boolean> => {
+  const website2 = website.replace(/\\/g, "\\\\");
+
+  const searchRequest = {
+    index: "_all",
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              wildcard: {
+                url: "*" + website2,
+              },
+            },
+            {
+              match_phrase: {
+                rootNode: false,
+              },
+            },
+          ],
+        },
+      },
+    },
+  };
+  return client
+    .search(searchRequest)
+    .then((response: any) => {
+      if (response && response.hits.total.value === 0) {
+        console.log("url not scrapped");
+        return false;
+      } else {
+        console.log("url already scrapped");
+        return true;
+      }
+    })
+    .catch((e: any) => {
+      console.log("error seeing if url exists " + e);
+    });
+};
 
 export const esDoesIndexExist = async (word: string) => {
   try {
@@ -255,7 +390,7 @@ export const esDoesIndexExist = async (word: string) => {
     console.log("failed to check if index exists " + e);
     return false;
   }
-}
+};
 
 export const initMapping = (indexName: string) => {
   const payload = {
@@ -274,12 +409,12 @@ export const initMapping = (indexName: string) => {
         section: {
           type: "text",
           analyzer: "std_english",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
+          fields: {
+            keyword: {
+              type: "keyword",
+              ignore_above: 256,
+            },
+          },
         },
         date: {
           type: "date",
@@ -290,33 +425,32 @@ export const initMapping = (indexName: string) => {
         title: {
           type: "text",
           analyzer: "std_english",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
+          fields: {
+            keyword: {
+              type: "keyword",
+              ignore_above: 256,
+            },
+          },
         },
         url: {
           type: "keyword",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
+          fields: {
+            keyword: {
+              type: "keyword",
+              ignore_above: 256,
+            },
+          },
         },
       },
     },
   };
 
-  return client.indices
-    .create({
-      index: indexName,
-      body: payload,
-      // include_type_name: true
-    })
-}
+  return client.indices.create({
+    index: indexName,
+    body: payload,
+    // include_type_name: true
+  });
+};
 
 async function addSection(
   request: ISingleDoc,
