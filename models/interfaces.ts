@@ -1,4 +1,5 @@
-export class Scraping {
+/* tslint:disable:max-classes-per-file */
+export class Section {
     title: string | undefined;
 
     index: string | undefined;
@@ -10,10 +11,10 @@ export class Scraping {
     rootNode: boolean | undefined;
 }
 
-export class AllScrapings {
+export class AllSections {
     url: string | undefined;
 
-    data: Scraping[] | undefined;
+    data: Section[] | undefined;
 }
 
 export class IndividualSentence {

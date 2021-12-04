@@ -13,7 +13,7 @@ import {esIsAtagURLIndexed, esIsRootURLIndexed } from "../ES/es.controller";
 
 // const proxies = [];
 import { Request, Response } from "express";
-import { AllScrapings, Scraping } from "../../../../models/interfaces";
+import { AllSections, Section } from "../../../../models/interfaces";
 import { cheerioScrape, findMatches, findSections, processATags } from "./scrapeHelpers";
 
 export async function scrape(req: Request, res: Response): Promise<any> {
@@ -77,7 +77,7 @@ export async function scrape(req: Request, res: Response): Promise<any> {
 export async function scrapeAll(
   req: Request,
   res: Response
-): Promise<AllScrapings[] | any> {
+): Promise<AllSections[] | any> {
   const website = req.body.website;
   const rootUrl = website.split("//")[1];
   // const proxyWPort = proxies[Math.floor(Math.random() * proxies.length)].split(
@@ -99,10 +99,10 @@ export async function scrapeAll(
         .goto(website, {
           waitLoad: true,
           waitNetworkIdle: true, // defaults to false
+          waitUntil: 'networkidle2',
         })
         .then(async (e) => {
           const hbody = await page.content();
-
           // return redditScrape(hbody, website);
 
           if (hbody) {
@@ -116,7 +116,7 @@ export async function scrapeAll(
             const rootNode = true;
             const alreadyScrapped: boolean = await esIsAtagURLIndexed(rootUrl);
             if (!alreadyScrapped) {
-              const tAndS: Scraping[] = findSections(
+              const tAndS: Section[] = findSections(
                 allTitles,
                 body,
                 website,

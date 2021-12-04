@@ -2,7 +2,8 @@ const cheerio = require("cheerio");
 const rp = require("request-promise");
 import { io } from "../../../index";
 import * as esController from "../ES/es.controller";
-import { Scraping } from "../../../../models/interfaces";
+import { Section } from "../../../../models/interfaces";
+import { Request, Response } from "express";
 const MBTIregexTitles =
   /([E|I]+[N|S][T|F]+[P|J])|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim;
 
@@ -61,7 +62,7 @@ export function cheerioScrape(hbody, rootUrl) {
   };
 }
 
-export function findSections(titles, htmlBody, website, rootNode?): Scraping[] {
+export function findSections(titles, htmlBody, website, rootNode?): Section[] {
   // this is for the paragraph
   // (?s)((?:[^\n][\n]?)+)
 
@@ -139,14 +140,14 @@ export function findSections(titles, htmlBody, website, rootNode?): Scraping[] {
           return;
         }
       }
-      const scraping = {
+      const aSection = {
         title: titles[i],
         index: match[0],
         section,
         url: website,
         rootNode,
       };
-      allSections.push(scraping);
+      allSections.push(aSection);
     }
   }
   return allSections;
@@ -193,7 +194,7 @@ export async function processATags(rootURL, aTags) {
               const { body, allTitles } = cheerioScrape(hbody, aRootUrl);
               // dont use the deDupedATags or it will be recurrsive
               const rootNode = false;
-              const tAndS: Scraping[] = findSections(
+              const tAndS: Section[] = findSections(
                 allTitles,
                 body,
                 rootURL,
@@ -236,10 +237,11 @@ export function dedupe(arr, key) {
 
 // NLP FTW
 // https://github.com/NaturalNode/natural
-// import natural = require('natural')
-// const wordnet = new natural.WordNet('C:/djRepo/nswg/nswg/wordNet/dict')
+import natural = require('natural')
+const wordnet = new natural.WordNet(process.env.WORDNET)
+// C:\Users\djway\Desktop\Repos\djRepo\nswg\nswg
 // // C: \djRepo\nswg\nswg\wordNet\dict\adj.exc
-// import sw = require('stopword')
+import sw = require('stopword')
 
 //   function removeStopWords(sentences) {
 //     // returns array of arrays
@@ -302,33 +304,35 @@ export function dedupe(arr, key) {
 //     )
 //   }
 
-//   function wordLookup(word) {
-//     // return new Promise(resolve => {
-//     return wordnet.lookup(word, results => {
-//       // let results2 = results.map(result => {
-//       console.log(word)
-//       //   return {
-//       //     rootWord: word,
-//       //     synsetOffset: result.synsetOffset,
-//       //     pos: result.pos,
-//       //     lemma: result.lemma,
-//       //     synonyms: result.synonyms,
-//       //     gloss: result.gloss
-//       //   }
+export async function wordLookup(req: Request, res: Response) {
+    let word = req.params.word
+    // return new Promise(resolve => {
+    return wordnet.lookup(word, results => {
+      console.log(word)
+      const formattedResults = results.map(result => {
+        return {
+          rootWord: word,
+          synsetOffset: result.synsetOffset,
+          pos: result.pos,
+          lemma: result.lemma,
+          synonyms: result.synonyms,
+          gloss: result.gloss
+        }
 
-//       //   // console.log(synsetOffset)
-//       //   // console.log(result.pos)
-//       //   // console.log(result.lemma)
-//       //   // console.log(result.synonyms)
-//       //   // console.log(result.pos)
-//       //   // console.log(result.gloss)
-//       // })
-//       // return goodRes
-//       // resolve(results)
-//       return results
-//     })
-//     // })
-//   }
+      //   // console.log(synsetOffset)
+      //   // console.log(result.pos)
+      //   // console.log(result.lemma)
+      //   // console.log(result.synonyms)
+      //   // console.log(result.pos)
+      //   // console.log(result.gloss)
+      })
+      // return goodRes
+      // resolve(results)
+      // return formattedResults
+      res.json(formattedResults)
+    })
+    // })
+  }
 
 // BERT https://www.youtube.com/watch?v=u91645MFytY
 

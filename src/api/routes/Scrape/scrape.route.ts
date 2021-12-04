@@ -4,6 +4,7 @@ import { Request, Response, Router } from "express";
 import * as esController from "../ES/es.controller";
 import { processDoc } from "../python/python";
 import * as scrapeController from "./scrape.controller";
+import {wordLookup} from "./scrapeHelpers"
 
 const router: Router = Router();
 
@@ -47,5 +48,7 @@ router.post("/Store", async (req: Request, res: Response) => {
 });
 
 router.post("/StoreMultiplePages", esController.esStoreAll);
+
+router.get("/synonyms/:word", wordLookup);
 
 export default router;

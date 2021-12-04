@@ -17,6 +17,5 @@ export const client = new elasticsearch.Client({
   hosts: [
     // 'https://[username]:[password]@[server]:[port]/',
     'http://localhost:9200/'
-  ],
-  log: 'trace'
+  ]
 })

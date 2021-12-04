@@ -8,6 +8,7 @@ export const mustContain = (index: string, text: string) => {
             must: {
               query_string: {
                 query: text,
+                // fuzziness: 'AUTO'
               },
             },
           },
@@ -24,7 +25,7 @@ export const mustContain = (index: string, text: string) => {
 // https://www.elastic.co/guide/en/elasticsearch/reference/6.8/full-text-queries.html
 
 export const typeaheadQuery = (index: string, text: string) => {
-  console.log(index + text);
+  // console.log(index + text);
   return {
     index,
     body: {
@@ -33,6 +34,7 @@ export const typeaheadQuery = (index: string, text: string) => {
           question: text,
         },
       },
+      // fuzziness: 'AUTO'
     },
   };
 };
