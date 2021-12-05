@@ -1,12 +1,12 @@
-import { io } from "../../..";
+import { io } from "..";
 
 const cheerio = require("cheerio");
 const MBTIregexTitles =
   /([E|I]+[N|S][T|F]+[P|J])|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim;
 
 const typeTitles = /([E|I]+[N|S][T|F]+[P|J])|COMMENT+(?=\'?s|S)*/gim;
+const rp = require("request-promise");
 
-  const rp = require("request-promise");
 function getPost(page, website) {
   const $ = cheerio.load(page);
   const pageContent = [];

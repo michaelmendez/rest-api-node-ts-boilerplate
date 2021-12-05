@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 
-import { EsIndex } from "../../../../models/interfaces";
-import { client } from "../../elasticsearch";
-import { mustContain } from "../../ESRequests";
-import { ISingleDoc, IStoreAllReq } from "../../models/singleDoc";
-import { processDoc } from "../python/python";
+import { EsIndex } from "../../models/interfaces";
+import { client } from "../api/elasticsearch";
+import { mustContain } from "../api/ESRequests";
+import { ISingleDoc, IStoreAllReq } from "../api/models/singleDoc";
+import { processDoc } from "./python";
 import { clusterSearch } from "./searchES";
 
 export const esHealth = async (req: Request, res: Response): Promise<any> => {

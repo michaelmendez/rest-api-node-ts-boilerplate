@@ -5,7 +5,7 @@ import * as express from "express";
 import * as helmet from "helmet";
 import * as morgan from "morgan";
 
-import api from "./api/index";
+import api from "./api/controller"
 
 // import * as errorHandler from "./helpers/errorHandler";
 

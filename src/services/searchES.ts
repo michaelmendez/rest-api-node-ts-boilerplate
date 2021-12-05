@@ -10,7 +10,7 @@
 import { Cluster } from "puppeteer-cluster";
 
 // import socket from '../../'
-import { io } from "../../../index";
+import { io } from "../index";
 
 // import Cluster from 'puppeteer-cluster'
 

@@ -1,4 +1,3 @@
-
 const puppeteer = require("puppeteer");
 const MBTIregexTitles =
   /([E|I]+[N|S][T|F]+[P|J])|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim;
@@ -9,12 +8,17 @@ const MBTIregexTitles =
 
 // import HttpProxyAgent = require("http-proxy-agent");
 
-import {esIsAtagURLIndexed, esIsRootURLIndexed } from "../ES/es.controller";
+import { esIsAtagURLIndexed, esIsRootURLIndexed } from "./es.controller";
 
 // const proxies = [];
 import { Request, Response } from "express";
-import { AllSections, Section } from "../../../../models/interfaces";
-import { cheerioScrape, findMatches, findSections, processATags } from "./scrapeHelpers";
+import { AllSections, Section } from "../../models/interfaces";
+import {
+  cheerioScrape,
+  findMatches,
+  findSections,
+  processATags,
+} from "./scrapeHelpers";
 
 export async function scrape(req: Request, res: Response): Promise<any> {
   const website = req.body.website;
@@ -31,10 +35,7 @@ export async function scrape(req: Request, res: Response): Promise<any> {
         waitNetworkIdle: true, // defaults to false
       })
       .then(async (hbody) => {
-        const { body } = cheerioScrape(
-          hbody,
-          rootUrl
-        );
+        const { body } = cheerioScrape(hbody, rootUrl);
         // const scrapedObj = new ScrapedObj(word)
         const scrapedObj = {
           word,
@@ -99,7 +100,7 @@ export async function scrapeAll(
         .goto(website, {
           waitLoad: true,
           waitNetworkIdle: true, // defaults to false
-          waitUntil: 'networkidle2',
+          waitUntil: "networkidle2",
         })
         .then(async (e) => {
           const hbody = await page.content();

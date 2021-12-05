@@ -1,8 +1,8 @@
 const cheerio = require("cheerio");
 const rp = require("request-promise");
-import { io } from "../../../index";
-import * as esController from "../ES/es.controller";
-import { Section } from "../../../../models/interfaces";
+import { io } from "../index";
+import * as esController from "./es.controller";
+import { Section } from "../../models/interfaces";
 import { Request, Response } from "express";
 const MBTIregexTitles =
   /([E|I]+[N|S][T|F]+[P|J])|COMMENT|MBTI|MEYERS BRIGG|MEYERS-BRIGG+(?=\'?s|S)*/gim;

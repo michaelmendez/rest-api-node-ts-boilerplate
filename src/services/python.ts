@@ -1,9 +1,9 @@
-import { IAnalyzedSection } from "../../models/analyzedSection";
-import { ISingleDoc, IStoreAllReq } from "../../models/singleDoc";
+import { IAnalyzedSection } from "../api/models/analyzedSection";
+import { ISingleDoc, IStoreAllReq } from "../api/models/singleDoc";
 
 const rp = require("request-promise");
-import { client } from "../../elasticsearch";
-import * as esController from "../ES/es.controller";
+import { client } from "../api/elasticsearch";
+// import * as esController from "./es.controller";
 
 export const processDoc = (request: ISingleDoc, origReq?: IStoreAllReq) => {
   console.log("processDoc");
