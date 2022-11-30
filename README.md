@@ -4,21 +4,16 @@ Backend for a private project nuxtScrap
 This was for forked from Michael Méndez
 https://github.com/michaelmendez/rest-api-node-ts-boilerplate
 
-This is a boilerplate for building scalable and robust REST APIs using Node.js & TypeScript.
-## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Features](#features)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [Directory Structure](#directory-structure)
-  - [Available Routes](#available-routes)
-  - [Available Scripts](#available-scripts)
-- [License](#license)
+## Original Purpose
+For scraping personality data
+
+## New Purpose/ Repurpose
+Will abstract to scrape web looking for keywords and topics
 
 ## Prerequisites
 
-You need to install [MongoDB](https://docs.mongodb.com/manual/administration/install-community/) either on your local machine or using a cloud service as [mLab](https://mlab.com/).
+You need to install [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
 
 ## Features
 
