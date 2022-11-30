@@ -62,7 +62,7 @@ export function cheerioScrape(hbody, rootUrl) {
   };
 }
 
-export function findSections(titles, htmlBody, website, rootNode?): Section[] {
+export function findMBTISections(titles, htmlBody, website, rootNode?): Section[] {
   // this is for the paragraph
   // (?s)((?:[^\n][\n]?)+)
 
@@ -153,6 +153,71 @@ export function findSections(titles, htmlBody, website, rootNode?): Section[] {
   return allSections;
 }
 
+export const findTextSections = (titles, htmlBody, website, rootNode?): Section[] => {
+  // this is for the paragraph
+  // (?s)((?:[^\n][\n]?)+)
+const allSections = [];
+  if (!htmlBody) {
+    console.log("no htmlbody");
+  }
+  // remove extra double spaces from html body
+  htmlBody = htmlBody.replace(/\s\s+/g, " ");
+  const regexToRemove = new RegExp(/(?:\s*)\n\s*/, "igm");
+  let match;
+  let werd;
+  for (let i = 0; i < titles.length; i++) {
+    if (!titles[i]) {
+      console.log("no title start");
+    }
+    // clean title
+    const filteredStart = titles[i].replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+    const reg1 = new RegExp(filteredStart, "ig");
+    // let start = htmlBody.indexOf(titles[i])
+
+    // find startIndex
+    const start = htmlBody.search(reg1);
+    // let ender = titles[i + 1]
+    let section;
+    let end;
+    if (!titles[i + 1]) {
+      console.log("no title end");
+      section = htmlBody.slice(start);
+    } else {
+      const filteredEnd = titles[i + 1].replace(
+        /[-[\]{}()*+?.,\\^$|#\s]/g,
+        "\\$&"
+      );
+      const reg2 = new RegExp(filteredEnd, "ig");
+      // let end = htmlBody.indexOf(titles[i + 1], start)
+      reg2.lastIndex = start;
+      end = htmlBody.search(reg2);
+      section = htmlBody.slice(start, end);
+    }
+
+
+    // let section = htmlBody.match(titleSection)
+    if (section) {
+      section = section.replace(regexToRemove, " ");
+      // remove title
+      section = section.replace(titles[i], "");
+
+      werd = titles[i];
+      if (!werd) {
+        console.log("no werd " + titles[i]);
+      }
+
+      const aSection = {
+        title: titles[i],
+        section,
+        url: website,
+        rootNode,
+      };
+      allSections.push(aSection);
+    }
+  }
+  return allSections;
+}
+
 export async function processATags(rootURL, aTags) {
   try {
     // var hostname = rootURL;
@@ -165,7 +230,7 @@ export async function processATags(rootURL, aTags) {
       const isUrl = websiteRegex.test(e.href);
       let url: string;
       if (!e.href) {
-        debugger;
+        // debugger;
       }
       const indexOfRoot = e.href.indexOf(hostname);
       if (indexOfRoot === -1 && isUrl === false) {
@@ -194,7 +259,7 @@ export async function processATags(rootURL, aTags) {
               const { body, allTitles } = cheerioScrape(hbody, aRootUrl);
               // dont use the deDupedATags or it will be recurrsive
               const rootNode = false;
-              const tAndS: Section[] = findSections(
+              const tAndS: Section[] = findMBTISections(
                 allTitles,
                 body,
                 rootURL,

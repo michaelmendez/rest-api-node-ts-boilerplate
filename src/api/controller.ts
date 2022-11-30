@@ -8,10 +8,13 @@ import {wordLookup} from "../services/scrapeHelpers"
 const router: Router = Router();
 
 // *********  Scrape ********* //
+router.post("/scrape/resources", scrapeController.getResources);
+router.post("/scrape/extract", scrapeController.extract);
 
 router.post("/scrape/Site", scrapeController.scrape);
 router.post("/scrape/all", scrapeController.scrapeAll);
 router.post("/scrape/storeAll", esController.esStoreAll);
+router.post("/scrape/storePage", esController.esStorePage);
 router.post("/scrape/Store", async (req: Request, res: Response) => {
   console.log("got to store request");
   try {
@@ -54,7 +57,7 @@ router.get("/scrape/synonyms/:word", wordLookup);
 // const router: Router = Router();
 
 router.get("/es/health", esController.esHealth);
-router.get("/es/catIndicies", esController.esCatIndicies);
+router.get("/es/catIndices", esController.esCatIndicies);
 router.delete("/es/deleteIndex/:word", esController.esDeleteIndex);
 router.post("/es/addDoc", esController.esAddDoc);
 

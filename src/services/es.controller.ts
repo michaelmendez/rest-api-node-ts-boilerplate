@@ -61,7 +61,7 @@ export const esDeleteIndex = async (
 export const esAddDoc = async (req: Request, res: Response): Promise<any> => {
   const respo = await esDoesIndexExist(req.body.word);
   if (!respo) {
-    const mappingSuccess = await initMapping(req.body.word);
+    const mappingSuccess = await initSectionMapping(req.body.word);
     if (mappingSuccess) {
       client
         .index({
@@ -263,7 +263,7 @@ export const esStoreAll = async (req: Request, res: Response): Promise<any> => {
   try {
     const respo = await esDoesIndexExist(req.body.index);
     if (!respo) {
-      const mappingSuccess = await initMapping(req.body.index);
+      const mappingSuccess = await initSectionMapping(req.body.index);
     }
     const request = {
       word: req.body.index,
@@ -294,6 +294,27 @@ export const esStoreAll = async (req: Request, res: Response): Promise<any> => {
     console.log("failed to create gotta problem creating doc");
   }
 };
+
+
+export const esStorePage = async (req: Request, res: Response): Promise<any> => {
+
+  try {
+
+    const createPage = await client.index({
+      index: 'page',
+      type: "_doc",
+      body: req.body,
+    });
+    if(createPage){
+      res.send(createPage);
+    } else{
+      res.status(500).send('error')
+    }
+  } catch (e) {
+    res.status(500).send(e)
+  }
+
+}
 
 export const esIsRootURLIndexed = (website: string): Promise<boolean> => {
   // const website = req.body.website
@@ -392,7 +413,7 @@ export const esDoesIndexExist = async (word: string) => {
   }
 };
 
-export const initMapping = (indexName: string) => {
+export const initSectionMapping = (indexName: string) => {
   const payload = {
     settings: {
       analysis: {
